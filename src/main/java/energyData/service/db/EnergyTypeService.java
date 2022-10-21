@@ -1,4 +1,4 @@
-package energyData.service;
+package energyData.service.db;
 
 import energyData.domain.EnergyType;
 import energyData.repository.EnergyTypeRepository;

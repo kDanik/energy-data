@@ -1,4 +1,4 @@
-package energyData.service;
+package energyData.service.db;
 
 import org.springframework.stereotype.Service;
 
