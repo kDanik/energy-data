@@ -1,4 +1,4 @@
-package energyData.service.parser;
+package energyData.service.parser.service;
 
 import lombok.Getter;
 import lombok.Setter;

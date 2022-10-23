@@ -1,5 +1,6 @@
-package energyData.service.parser;
+package energyData.service.parser.service;
 
+import energyData.service.parser.exception.EnergyDataParsingException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,10 +36,17 @@ public class EnergyDataParser {
         String startSearchString = "js\":\""; // js part start with js tag
         String endSearchString = "\"html\":"; // js part ends with html tag
 
-        int start = requestData.indexOf(startSearchString) + startSearchString.length();
-        int end = requestData.lastIndexOf(endSearchString) - endSearchString.length() + 1;
+        try {
+            int start = requestData.indexOf(startSearchString) + startSearchString.length();
+            int end = requestData.lastIndexOf(endSearchString) - endSearchString.length() + 1;
 
-        return requestData.substring(start, end);
+            return requestData.substring(start, end);
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+            System.out.println("requestData: " + requestData);
+
+            throw new EnergyDataParsingException();
+        }
     }
 
     /**
@@ -49,7 +57,11 @@ public class EnergyDataParser {
      */
     private String[] splitByType(String jsContent) {
         String[] temp = jsContent.split("name\\\\\":");
-        return Arrays.copyOfRange(temp, 1, temp.length);
+        temp = Arrays.copyOfRange(temp, 1, temp.length);
+
+        if (temp.length == 0) throw new EnergyDataParsingException("Exception while parsing energy data, splitByType() resulted into empty array!");
+
+        return temp;
     }
 
     /**
@@ -115,17 +127,17 @@ public class EnergyDataParser {
      * @param data         see splitByTypeData
      * @param currentIndex current index in data string, from which search should be continued
      * @param valuesPairs  array in which valuePair should be added, if found
-     * @return new currentIndex if there can be still elements, otherwise -1
+     * @return new currentIndex if there can be still further elements, otherwise -1
      */
     private int addNextValuePair(String data, int currentIndex, ArrayList<EnergyDataValuePair> valuesPairs) {
         int firstValueEnd = data.indexOf(',', currentIndex + 1);
-        Long firstValue = Long.parseLong(data.substring(currentIndex + 1, firstValueEnd));
+        Long unixTimeStamp = Long.parseLong(data.substring(currentIndex + 1, firstValueEnd));
 
         int secondValueStart = firstValueEnd + 1;
         int secondValueEnd = data.indexOf(']', secondValueStart + 1);
-        Double secondValue = Double.parseDouble(data.substring(secondValueStart, secondValueEnd));
+        Double energyValue = Double.parseDouble(data.substring(secondValueStart, secondValueEnd));
 
-        valuesPairs.add(new EnergyDataValuePair(firstValue, secondValue));
+        valuesPairs.add(new EnergyDataValuePair(unixTimeStamp, energyValue));
 
         currentIndex = secondValueEnd + 2;
         if (data.charAt(currentIndex - 1) != ',') {
