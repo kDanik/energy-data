@@ -27,13 +27,16 @@ public class EnergyDataRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        LocalDate startDate = LocalDate.of(2022, 2, 1);
-        LocalDate endDate = LocalDate.of(2022, 3, 1);
+        LocalDate startDate = LocalDate.of(2022, 1, 1);
+        LocalDate endDate = LocalDate.of(2022, 7, 14);
 
         try {
             List<String> testData = energyDataQueryService.fetchHourlyEnergyData(startDate, endDate);
-            List<EnergyData> energyData = energyDataParser.parseEnergyDataString(testData.get(0));
+
+            List<EnergyData> energyData = energyDataParser.parseEnergyDataList(testData);
+
             System.out.println(energyData);
+
         } catch (EnergyDataQueryException | EnergyDataParsingException e) {
             e.printStackTrace();
         }

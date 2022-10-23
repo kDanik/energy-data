@@ -12,5 +12,6 @@ public class EnergyDataValuePair {
     }
 
     public Long unixTimeStamp;
+    // can be consumption or generation value. Depends on type of energy data
     public Double energyValue;
 }

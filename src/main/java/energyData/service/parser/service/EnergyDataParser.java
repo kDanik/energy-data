@@ -9,10 +9,26 @@ import java.util.List;
 
 @Service
 public class EnergyDataParser {
+
+    /**
+     * Parses list of request body with energy data
+     * @param requestDataList
+     * @return List of EnergyData (names and values)
+     */
+    public List<EnergyData> parseEnergyDataList(List<String> requestDataList) {
+        List<EnergyData> result = new ArrayList<>();
+
+        for (String requestData : requestDataList) {
+            result.addAll(parseEnergyDataString(requestData));
+        }
+
+        return result;
+    }
+
     /**
      * Parses request body with energy data
      * @param requestData
-     * @return List with EnergyData (names and values)
+     * @return List of EnergyData (names and values)
      */
     public List<EnergyData> parseEnergyDataString(String requestData) {
         List<EnergyData> result = new ArrayList<>();
