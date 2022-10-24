@@ -67,7 +67,7 @@ public class EnergyDataQueryService {
                 throw new EnergyDataQueryException("Exception while trying to fetch energy data");
             }
 
-            startDate = chunkEndDate;
+            startDate = chunkEndDate.plusDays(1);
         }
 
         return result;
