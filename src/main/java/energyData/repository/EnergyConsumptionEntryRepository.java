@@ -1,9 +1,14 @@
 package energyData.repository;
 
 import energyData.domain.EnergyConsumptionEntry;
-import org.springframework.data.repository.CrudRepository;
+import energyData.domain.EnergyType;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Repository
-public interface EnergyConsumptionEntryRepository extends CrudRepository<EnergyConsumptionEntry, Long> {
+public interface EnergyConsumptionEntryRepository extends JpaRepository<EnergyConsumptionEntry, Long> {
+    Optional<EnergyConsumptionEntry> findByEnergyTypeAndDateTime(EnergyType energyType, LocalDateTime localDateTime);
 }

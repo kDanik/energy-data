@@ -4,6 +4,8 @@ import energyData.domain.EnergyType;
 import energyData.repository.EnergyTypeRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class EnergyTypeService {
     private final EnergyTypeRepository energyTypeRepository;
@@ -12,7 +14,19 @@ public class EnergyTypeService {
         this.energyTypeRepository = energyTypeRepository;
     }
 
-    public void testStuff() {
-        energyTypeRepository.save(new EnergyType());
+    public Optional<EnergyType> findEnergyTypeByName(String energyTypeName) {
+        return energyTypeRepository.findByName(energyTypeName);
+    }
+
+    /**
+     * Creates new EnergyType with given name
+     * @param energyTypeName unique energy type name. Using duplicate name will throw exception
+     * @return new EnergyType entity
+     */
+    public EnergyType createNewEnergyType(String energyTypeName) {
+        EnergyType newEnergyType = new EnergyType();
+        newEnergyType.setName(energyTypeName);
+
+        return energyTypeRepository.saveAndFlush(newEnergyType);
     }
 }

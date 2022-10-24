@@ -1,5 +1,6 @@
 package energyData.domain;
 
+import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,5 +15,7 @@ public class EnergyType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique=true)
+    @NotNull
     private String name;
 }

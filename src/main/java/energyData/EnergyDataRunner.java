@@ -97,7 +97,7 @@ public class EnergyDataRunner implements CommandLineRunner {
             System.out.println("ERROR! Start date should before or equals to end date! Please try again:\n");
             return;
         } else {
-            System.out.println("\nStarting energy data fetching and saving process for time period. This might take few minutes...");
+            System.out.println("\nStarting energy data fetching and saving process for given time period. This will take few minutes...");
 
             energyDataService.fetchAndSaveData(startDate, endDate);
 

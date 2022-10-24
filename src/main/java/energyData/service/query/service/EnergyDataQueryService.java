@@ -35,7 +35,7 @@ public class EnergyDataQueryService {
 
     /**
      * Fetches energy consumption and generation data for given time period and return it as String array,
-     * where each string is data for time period of 28 <= days. So time period of 100 days will return 4 strings in total (28 + 28 + 28 + 16).
+     * where each string is data for time period of 28 days or less. So time period of 100 days will return 4 strings in total (28 + 28 + 28 + 16).
      * @param startDate startDate for fetching (result includes startDate)
      * @param endDate end for fetching (result includes endDate)
      * @return String array with request results
