@@ -1,5 +1,6 @@
 package energyData.service;
 
+import energyData.domain.EnergyConsumptionEntry;
 import energyData.domain.EnergyType;
 import energyData.service.db.EnergyConsumptionEntryService;
 import energyData.service.db.EnergyTypeService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
@@ -45,35 +47,47 @@ public class EnergyDataService {
             System.out.println("\nParsing data...\n");
             List<EnergyData> energyDataList = energyDataParser.parseEnergyDataList(rawDataList);
 
+            System.out.println("\nProcessing data...\n");
+            List<EnergyConsumptionEntry> allEnergyConsumptionEntries = processEnergyDataList(energyDataList);
+            System.out.println("\nTotal number of Energy Consumption Entries to save is: " + allEnergyConsumptionEntries.size());
+
             System.out.println("\nSaving data...\n");
-            saveEnergyDataList(energyDataList);
+            energyConsumptionEntryService.saveAll(allEnergyConsumptionEntries);
 
         } catch (EnergyDataQueryException | EnergyDataParsingException e) {
             e.printStackTrace();
         }
     }
 
-    private void saveEnergyDataList(List<EnergyData> energyDataList) {
+    private List<EnergyConsumptionEntry> processEnergyDataList(List<EnergyData> energyDataList) {
+        List<EnergyConsumptionEntry> allEnergyConsumptionEntries = new ArrayList<>();
+        
         for (EnergyData energyData : energyDataList) {
-            saveEnergyData(energyData);
+            addEnergyConsumptionEntries(energyData, allEnergyConsumptionEntries);
         }
+
+        return  allEnergyConsumptionEntries;
     }
 
-    private void saveEnergyData(EnergyData energyData) {
+    private void addEnergyConsumptionEntries(EnergyData energyData, List<EnergyConsumptionEntry> allEnergyConsumptionEntries) {
         EnergyType energyType = getOrCreateEnergyType(energyData.getName());
 
         for (EnergyDataValuePair energyDataValuePair : energyData.getData()) {
-            saveOneEnergyDataPair(energyDataValuePair, energyType);
+            EnergyConsumptionEntry energyConsumptionEntry = createEnergyConsumptionEntry(energyDataValuePair, energyType);
+
+            if (energyConsumptionEntry != null) {
+                allEnergyConsumptionEntries.add(energyConsumptionEntry);
+            }
         }
     }
 
-    private void saveOneEnergyDataPair(EnergyDataValuePair energyDataValuePair, EnergyType energyType) {
-        if (energyDataValuePair != null && energyDataValuePair.getUnixTimeStamp() == null) return;
+    private EnergyConsumptionEntry createEnergyConsumptionEntry(EnergyDataValuePair energyDataValuePair, EnergyType energyType) {
+        if (energyDataValuePair != null && energyDataValuePair.getUnixTimeStamp() == null) return null;
 
         double energyValueInGw = energyDataValuePair.getEnergyValue() != null ? energyDataValuePair.getEnergyValue() : 0;
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(energyDataValuePair.getUnixTimeStamp()), TimeZone.getDefault().toZoneId());
 
-        energyConsumptionEntryService.saveEnergyConsumptionEntry(energyType, energyValueInGw, dateTime);
+        return energyConsumptionEntryService.createOrOverrideEnergyConsumptionEntry(energyType, energyValueInGw, dateTime);
     }
 
     private EnergyType getOrCreateEnergyType(String energyTypeName) {

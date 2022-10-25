@@ -6,6 +6,7 @@ import energyData.repository.EnergyConsumptionEntryRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -16,36 +17,40 @@ public class EnergyConsumptionEntryService {
         this.energyConsumptionEntryRepository = energyConsumptionEntryRepository;
     }
 
+    public void saveAll(List<EnergyConsumptionEntry> allEnergyConsumptionEntries) {
+        energyConsumptionEntryRepository.saveAllAndFlush(allEnergyConsumptionEntries);
+    }
+
     /**
-     * Saves new entry or overrides existing entry with given data
+     * Creates new entry or overrides existing entry with given data. DOES NOT save entry into database.
+     * Due to performance reasons saving should be done to entire list, instead of each entry separately.
      * @param energyType
      * @param energyValueInGw energy value in gigawatt
      * @param dateTime
      * @return new EnergyConsumptionEntry entry or overridden EnergyConsumptionEntry entry
      */
-    public EnergyConsumptionEntry saveEnergyConsumptionEntry(EnergyType energyType, Double energyValueInGw, LocalDateTime dateTime) {
+    public EnergyConsumptionEntry createOrOverrideEnergyConsumptionEntry(EnergyType energyType, Double energyValueInGw, LocalDateTime dateTime) {
         Optional<EnergyConsumptionEntry> consumptionEntryOptional = energyConsumptionEntryRepository.findByEnergyTypeAndDateTime(energyType, dateTime);
-
         if (consumptionEntryOptional.isPresent()) {
             return overrideValueOfExistingEntry(consumptionEntryOptional.get(), energyValueInGw);
         } else {
-            return saveNewEntry(energyType, energyValueInGw, dateTime);
+            return createNewEntry(energyType, energyValueInGw, dateTime);
         }
     }
 
     private EnergyConsumptionEntry overrideValueOfExistingEntry(EnergyConsumptionEntry energyConsumptionEntry, Double energyValueInGw) {
         energyConsumptionEntry.setValueInGw(energyValueInGw);
 
-        return energyConsumptionEntryRepository.saveAndFlush(energyConsumptionEntry);
+        return energyConsumptionEntry;
     }
 
-    private EnergyConsumptionEntry saveNewEntry(EnergyType energyType, Double energyValueInGw, LocalDateTime dateTime) {
+    private EnergyConsumptionEntry createNewEntry(EnergyType energyType, Double energyValueInGw, LocalDateTime dateTime) {
         EnergyConsumptionEntry energyConsumptionEntry = new EnergyConsumptionEntry();
 
         energyConsumptionEntry.setEnergyType(energyType);
         energyConsumptionEntry.setValueInGw(energyValueInGw);
         energyConsumptionEntry.setDateTime(dateTime);
 
-        return energyConsumptionEntryRepository.saveAndFlush(energyConsumptionEntry);
+        return energyConsumptionEntry;
     }
 }
