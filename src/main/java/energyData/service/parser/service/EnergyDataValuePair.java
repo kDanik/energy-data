@@ -8,9 +8,7 @@ import lombok.ToString;
 @Setter
 @Getter
 public class EnergyDataValuePair {
-    public EnergyDataValuePair(Long unixTimeStamp, Double energyValue) {
-        this.unixTimeStamp = unixTimeStamp;
-        this.energyValue = energyValue;
+    public EnergyDataValuePair() {
     }
 
     private Long unixTimeStamp;

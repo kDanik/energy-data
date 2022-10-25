@@ -12,6 +12,7 @@ public class EnergyDataParser {
 
     /**
      * Parses list of request body with energy data
+     *
      * @param requestDataList
      * @return List of EnergyData (names and values)
      */
@@ -27,6 +28,7 @@ public class EnergyDataParser {
 
     /**
      * Parses request body with energy data
+     *
      * @param requestData
      * @return List of EnergyData (names and values)
      */
@@ -75,7 +77,8 @@ public class EnergyDataParser {
         String[] temp = jsContent.split("name\\\\\":");
         temp = Arrays.copyOfRange(temp, 1, temp.length);
 
-        if (temp.length == 0) throw new EnergyDataParsingException("Exception while parsing energy data, splitByType() resulted into empty array!");
+        if (temp.length == 0)
+            throw new EnergyDataParsingException("Exception while parsing energy data, splitByType() resulted into empty array!");
 
         return temp;
     }
@@ -146,21 +149,39 @@ public class EnergyDataParser {
      * @return new currentIndex if there can be still further elements, otherwise -1
      */
     private int addNextValuePair(String data, int currentIndex, ArrayList<EnergyDataValuePair> valuesPairs) {
-        int firstValueEnd = data.indexOf(',', currentIndex + 1);
-        Long unixTimeStamp = Long.parseLong(data.substring(currentIndex + 1, firstValueEnd));
+        EnergyDataValuePair energyDataValuePair = new EnergyDataValuePair();
 
-        int secondValueStart = firstValueEnd + 1;
-        int secondValueEnd = data.indexOf(']', secondValueStart + 1);
-        Double energyValue = Double.parseDouble(data.substring(secondValueStart, secondValueEnd));
+        int energyPairEndIndex = fillValuePairWithData(data, currentIndex, energyDataValuePair);
 
-        valuesPairs.add(new EnergyDataValuePair(unixTimeStamp, energyValue));
+        valuesPairs.add(energyDataValuePair);
 
-        currentIndex = secondValueEnd + 2;
+        currentIndex = energyPairEndIndex + 2;
         if (data.charAt(currentIndex - 1) != ',') {
             return -1;
         }
 
         return currentIndex;
+    }
+
+    private int fillValuePairWithData(String data, int currentIndex, EnergyDataValuePair valuePair) {
+        Double energyValue = 0.0;
+        int firstValueEnd = data.indexOf(',', currentIndex + 1);
+
+        Long unixTimeStamp = Long.parseLong(data.substring(currentIndex + 1, firstValueEnd));
+
+
+        int secondValueStart = firstValueEnd + 1;
+        int secondValueEnd = data.indexOf(']', secondValueStart + 1);
+        String energyValueString = data.substring(secondValueStart, secondValueEnd);
+
+        // if energyValueString is null, parsing shouldn't be done and 0.0 value be used instead
+        if (!energyValueString.equals("null")) {
+            energyValue = Double.parseDouble(data.substring(secondValueStart, secondValueEnd));
+        }
+
+        valuePair.setEnergyValue(energyValue);
+        valuePair.setUnixTimeStamp(unixTimeStamp);
+        return secondValueEnd;
     }
 
     /**
