@@ -2,6 +2,8 @@ package energyData.service.query.service;
 
 import energyData.service.query.exception.EnergyDataQueryException;
 import energyData.service.query.exception.TooBigTimePeriodException;
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -36,13 +38,15 @@ public class EnergyDataQueryService {
     /**
      * Fetches energy consumption and generation data for given time period and return it as String array,
      * where each string is data for time period of 28 days or less. So time period of 100 days will return 4 strings in total (28 + 28 + 28 + 16).
+     *
      * @param startDate startDate for fetching (result includes startDate)
-     * @param endDate end for fetching (result includes endDate)
+     * @param endDate   end for fetching (result includes endDate)
      * @return String array with request results
      */
     public List<String> fetchHourlyEnergyData(LocalDate startDate, LocalDate endDate) {
         // to keep interval between energy data entries 1 hour this method will split fetching into request-chunks of 28 days each
         List<String> result = new ArrayList<>(10);
+        ProgressBar progressBar = createProgressBarForFetchingProcess(startDate, endDate);
 
         boolean timePeriodFullyIterated = false;
         LocalDate chunkEndDate = startDate;
@@ -68,8 +72,10 @@ public class EnergyDataQueryService {
             }
 
             startDate = chunkEndDate.plusDays(1);
+            progressBar.step();
         }
 
+        progressBar.close();
         return result;
     }
 
@@ -102,5 +108,12 @@ public class EnergyDataQueryService {
 
         // TODO maybe move service url to class attributes or application.properties
         return new URI("https://www.agora-energiewende.de/service/agorameter/chart/data/power_generation/" + formattedStartDate + "/" + formattedEndDate + "/today/chart.json");
+    }
+
+    // it is a little dirty to have process bar as part of this service, but I don't know how to do it differently, without moving a lot of logic to EnergyDataService
+    private ProgressBar createProgressBarForFetchingProcess(LocalDate startDate, LocalDate endDate) {
+        // calculate size of progress bar in chunks
+        int processBarSize = (int) Math.ceil((double) ChronoUnit.DAYS.between(startDate, endDate) / MAXIMUM_TIME_PERIOD_PER_FETCH);
+        return new ProgressBarBuilder().setInitialMax(processBarSize).setTaskName("Fetching data").build();
     }
 }

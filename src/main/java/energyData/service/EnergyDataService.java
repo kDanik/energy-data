@@ -10,6 +10,8 @@ import energyData.service.parser.service.EnergyDataParser;
 import energyData.service.parser.service.EnergyDataValuePair;
 import energyData.service.query.exception.EnergyDataQueryException;
 import energyData.service.query.service.EnergyDataQueryService;
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -36,37 +38,51 @@ public class EnergyDataService {
 
     /**
      * Fetches, parses and saves / overrides energy data for given time period
+     *
      * @param startDate
      * @param endDate
      */
     public void fetchAndSaveData(LocalDate startDate, LocalDate endDate) {
         try {
-            System.out.println("\nFetching data...\n");
             List<String> rawDataList = energyDataQueryService.fetchHourlyEnergyData(startDate, endDate);
 
-            System.out.println("\nParsing data...\n");
-            List<EnergyData> energyDataList = energyDataParser.parseEnergyDataList(rawDataList);
+            List<EnergyData> energyDataList = parseData(rawDataList);
 
-            System.out.println("\nProcessing data...\n");
             List<EnergyConsumptionEntry> allEnergyConsumptionEntries = processEnergyDataList(energyDataList);
+
             System.out.println("\nTotal number of Energy Consumption Entries to save is: " + allEnergyConsumptionEntries.size());
-
-            System.out.println("\nSaving data...\n");
+            System.out.println("\nSaving data (saved with saveAll(), so no progress bar available)...\n");
             energyConsumptionEntryService.saveAll(allEnergyConsumptionEntries);
-
         } catch (EnergyDataQueryException | EnergyDataParsingException e) {
             e.printStackTrace();
         }
     }
 
-    private List<EnergyConsumptionEntry> processEnergyDataList(List<EnergyData> energyDataList) {
-        List<EnergyConsumptionEntry> allEnergyConsumptionEntries = new ArrayList<>();
-        
-        for (EnergyData energyData : energyDataList) {
-            addEnergyConsumptionEntries(energyData, allEnergyConsumptionEntries);
+    private List<EnergyData> parseData(List<String> requestDataList) {
+        List<EnergyData> result = new ArrayList<>();
+        ProgressBar progressBar = new ProgressBarBuilder().setInitialMax(requestDataList.size()).setTaskName("Parsing data").build();
+
+        for (String requestData : requestDataList) {
+            result.addAll(energyDataParser.parseEnergyDataString(requestData));
+            progressBar.step();
         }
 
-        return  allEnergyConsumptionEntries;
+        progressBar.close();
+
+        return result;
+    }
+
+    private List<EnergyConsumptionEntry> processEnergyDataList(List<EnergyData> energyDataList) {
+        List<EnergyConsumptionEntry> allEnergyConsumptionEntries = new ArrayList<>();
+        ProgressBar progressBar = new ProgressBarBuilder().setInitialMax(energyDataList.size()).setTaskName("Processing data").build();
+
+        for (EnergyData energyData : energyDataList) {
+            addEnergyConsumptionEntries(energyData, allEnergyConsumptionEntries);
+            progressBar.step();
+        }
+
+        progressBar.close();
+        return allEnergyConsumptionEntries;
     }
 
     private void addEnergyConsumptionEntries(EnergyData energyData, List<EnergyConsumptionEntry> allEnergyConsumptionEntries) {
