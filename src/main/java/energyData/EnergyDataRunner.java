@@ -85,7 +85,7 @@ public class EnergyDataRunner implements CommandLineRunner {
     private void performFetchAndSaveAction(Scanner scanner) {
         System.out.println("You selected action for fetching and saving energy data to database.");
         System.out.println("For this action you will need to specify 2 dates: start date and end date for time period to fetch.\n");
-        System.out.println("Please dates in format dd.MM.yyyy (for example: 30.11.2020)\n");
+        System.out.println("Please enter dates in format dd.MM.yyyy (for example: 30.11.2020)\n");
 
         System.out.println("Please enter start date:");
         LocalDate startDate = getDateFromInput(scanner);
