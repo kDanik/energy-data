@@ -7,12 +7,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
 @Component
 public class EnergyDataController {
+    private final Logger LOG = LoggerFactory.getLogger(EnergyDataController.class);
     @FXML
     private TextArea textAreaFeedback;
 
@@ -70,7 +73,7 @@ public class EnergyDataController {
                 energyDataService.fetchAndSaveData(startDate, endDate);
                 success = true;
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error("exception while trying to fetch and save energy data: ", e);
 
                 success = false;
             } finally {

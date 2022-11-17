@@ -2,6 +2,8 @@ package energyData.service.query.service;
 
 import energyData.service.query.exception.EnergyDataQueryException;
 import energyData.service.query.exception.TooBigTimePeriodException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -18,6 +20,7 @@ import java.util.List;
 
 @Service
 public class EnergyDataQueryService {
+    private final Logger LOG = LoggerFactory.getLogger(EnergyDataQueryService.class);
     private final RestTemplate restTemplate;
 
     private final DateTimeFormatter apiDateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -63,7 +66,8 @@ public class EnergyDataQueryService {
             try {
                 result.add(fetchOneEnergyDataChunk(startDate, chunkEndDate));
             } catch (URISyntaxException | TooBigTimePeriodException | RestClientException e) {
-                e.printStackTrace();
+                LOG.error("Exception while trying to fetch energy data: ", e);
+
                 throw new EnergyDataQueryException("Exception while trying to fetch energy data");
             }
 

@@ -2,6 +2,8 @@ package energyData.service.parser.service;
 
 import energyData.service.parser.exception.EnergyDataParsingException;
 import energyData.util.HTMLEscape;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.List;
 
 @Service
 public class EnergyDataParser {
+    private final Logger LOG = LoggerFactory.getLogger(EnergyDataParser.class);
 
     public List<EnergyData> parseEnergyData(List<String> requestDataList) {
         List<EnergyData> result = new ArrayList<>();
@@ -55,9 +58,8 @@ public class EnergyDataParser {
 
             return requestData.substring(start, end);
         } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
-            System.out.println("requestData: " + requestData);
-
+            LOG.error("IndexOutOfBoundsException while parsing request data: " + requestData, e);
+            
             throw new EnergyDataParsingException();
         }
     }

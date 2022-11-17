@@ -3,6 +3,8 @@ package energyData.service.db;
 import energyData.domain.EnergyConsumptionEntry;
 import energyData.domain.EnergyType;
 import energyData.repository.EnergyConsumptionEntryRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,6 +14,8 @@ import java.util.Optional;
 @Service
 public class EnergyConsumptionEntryService {
     private final EnergyConsumptionEntryRepository energyConsumptionEntryRepository;
+
+    private final Logger LOG = LoggerFactory.getLogger(EnergyConsumptionEntryService.class);
 
     public EnergyConsumptionEntryService(EnergyConsumptionEntryRepository energyConsumptionEntryRepository) {
         this.energyConsumptionEntryRepository = energyConsumptionEntryRepository;
@@ -25,7 +29,7 @@ public class EnergyConsumptionEntryService {
             // if id is new (or null) and entry exists with same type and dateTime, it is duplicate
             if (energyConsumptionEntry.getId() == null || !energyConsumptionEntryRepository.existsById(energyConsumptionEntry.getId())) {
                 if (energyConsumptionEntryRepository.existsByEnergyTypeAndDateTime(energyConsumptionEntry.getEnergyType(), energyConsumptionEntry.getDateTime())) {
-                    System.out.println("Duplicate entry detected! check your implementation or agora api for errors: " + energyConsumptionEntry);
+                    LOG.warn("Duplicate entry detected! check your implementation or agora api for errors: " + energyConsumptionEntry);
 
                     continue;
                 }
