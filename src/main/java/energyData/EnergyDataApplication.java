@@ -1,11 +1,12 @@
 package energyData;
 
-import org.springframework.boot.SpringApplication;
+import energyData.gui.EnergyDateGUI;
+import javafx.application.Application;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class EnergyDataApplication {
     public static void main(String[] args) {
-        SpringApplication.run(EnergyDataApplication.class, args);
+        Application.launch(EnergyDateGUI.class, args);
     }
 }

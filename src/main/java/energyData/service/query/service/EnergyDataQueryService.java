@@ -2,17 +2,13 @@ package energyData.service.query.service;
 
 import energyData.service.query.exception.EnergyDataQueryException;
 import energyData.service.query.exception.TooBigTimePeriodException;
-import me.tongfei.progressbar.ProgressBar;
-import me.tongfei.progressbar.ProgressBarBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -30,6 +26,7 @@ public class EnergyDataQueryService {
     // time interval of 1 day, instead of required time interval of 1 hour.
     // 28 is obviously minimum possible month size.
     private final int MAXIMUM_TIME_PERIOD_PER_FETCH = 28;
+    private final String API_URL = "https://www.agora-energiewende.de/service/agorameter/chart/data/power_generation/";
 
     public EnergyDataQueryService() {
         this.restTemplate = new RestTemplate();
@@ -46,7 +43,6 @@ public class EnergyDataQueryService {
     public List<String> fetchHourlyEnergyData(LocalDate startDate, LocalDate endDate) {
         // to keep interval between energy data entries 1 hour this method will split fetching into request-chunks of 28 days each
         List<String> result = new ArrayList<>(10);
-        ProgressBar progressBar = createProgressBarForFetchingProcess(startDate, endDate);
 
         boolean timePeriodFullyIterated = false;
         LocalDate chunkEndDate = startDate;
@@ -72,10 +68,8 @@ public class EnergyDataQueryService {
             }
 
             startDate = chunkEndDate.plusDays(1);
-            progressBar.step();
         }
 
-        progressBar.close();
         return result;
     }
 
@@ -107,13 +101,6 @@ public class EnergyDataQueryService {
         String formattedEndDate = apiDateFormat.format(endDate);
 
         // TODO maybe move service url to class attributes or application.properties
-        return new URI("https://www.agora-energiewende.de/service/agorameter/chart/data/power_generation/" + formattedStartDate + "/" + formattedEndDate + "/today/chart.json");
-    }
-
-    // it is a little dirty to have process bar as part of this service, but I don't know how to do it differently, without moving a lot of logic to EnergyDataService
-    private ProgressBar createProgressBarForFetchingProcess(LocalDate startDate, LocalDate endDate) {
-        // calculate size of progress bar in chunks
-        int processBarSize = (int) Math.ceil((double) ChronoUnit.DAYS.between(startDate, endDate) / MAXIMUM_TIME_PERIOD_PER_FETCH);
-        return new ProgressBarBuilder().setInitialMax(processBarSize).setTaskName("Fetching data").build();
+        return new URI(API_URL + formattedStartDate + "/" + formattedEndDate + "/today/chart.json");
     }
 }

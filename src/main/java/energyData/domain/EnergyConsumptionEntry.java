@@ -3,12 +3,14 @@ package energyData.domain;
 import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Setter
 @Getter
+@ToString
 @Entity
 // uniqueConstraints should only take real columnNames from database.
 // Somehow it does that only for one of the fields, and for dateTime it doesn't allow date_time.
@@ -26,9 +28,9 @@ public class EnergyConsumptionEntry {
     private LocalDateTime dateTime;
 
     @NotNull
-    private Double valueInGw;
+    private Double valueInMw;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "energy_type_id")
     @NotNull
     private EnergyType energyType;

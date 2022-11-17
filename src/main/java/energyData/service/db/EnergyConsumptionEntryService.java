@@ -18,7 +18,21 @@ public class EnergyConsumptionEntryService {
     }
 
     public void saveAll(List<EnergyConsumptionEntry> allEnergyConsumptionEntries) {
-        energyConsumptionEntryRepository.saveAllAndFlush(allEnergyConsumptionEntries);
+        // due to some errors in API of agora (there is duplicated entry for one hour on 30.10.2022) this has to be done like that, instead of using saveAllAndFlush()
+
+        for (EnergyConsumptionEntry energyConsumptionEntry : allEnergyConsumptionEntries) {
+            // before saving, we should check if entry is not duplicate
+            // if id is new (or null) and entry exists with same type and dateTime, it is duplicate
+            if (energyConsumptionEntry.getId() == null || !energyConsumptionEntryRepository.existsById(energyConsumptionEntry.getId())) {
+                if (energyConsumptionEntryRepository.existsByEnergyTypeAndDateTime(energyConsumptionEntry.getEnergyType(), energyConsumptionEntry.getDateTime())) {
+                    System.out.println("Duplicate entry detected! check your implementation or agora api for errors: " + energyConsumptionEntry);
+
+                    continue;
+                }
+            }
+
+            energyConsumptionEntryRepository.saveAndFlush(energyConsumptionEntry);
+        }
     }
 
     /**
@@ -39,7 +53,7 @@ public class EnergyConsumptionEntryService {
     }
 
     private EnergyConsumptionEntry overrideValueOfExistingEntry(EnergyConsumptionEntry energyConsumptionEntry, Double energyValueInGw) {
-        energyConsumptionEntry.setValueInGw(energyValueInGw);
+        energyConsumptionEntry.setValueInMw(energyValueInGw);
 
         return energyConsumptionEntry;
     }
@@ -48,7 +62,7 @@ public class EnergyConsumptionEntryService {
         EnergyConsumptionEntry energyConsumptionEntry = new EnergyConsumptionEntry();
 
         energyConsumptionEntry.setEnergyType(energyType);
-        energyConsumptionEntry.setValueInGw(energyValueInGw);
+        energyConsumptionEntry.setValueInMw(energyValueInGw);
         energyConsumptionEntry.setDateTime(dateTime);
 
         return energyConsumptionEntry;

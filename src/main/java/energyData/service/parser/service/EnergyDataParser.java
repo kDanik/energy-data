@@ -1,6 +1,7 @@
 package energyData.service.parser.service;
 
 import energyData.service.parser.exception.EnergyDataParsingException;
+import energyData.util.HTMLEscape;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -9,13 +10,24 @@ import java.util.List;
 
 @Service
 public class EnergyDataParser {
+
+    public List<EnergyData> parseEnergyData(List<String> requestDataList) {
+        List<EnergyData> result = new ArrayList<>();
+
+        for (String requestData : requestDataList) {
+            result.addAll(parseEnergyDataString(requestData));
+        }
+
+        return result;
+    }
+
     /**
      * Parses request body with energy data
      *
      * @param requestData
      * @return List of EnergyData (names and values)
      */
-    public List<EnergyData> parseEnergyDataString(String requestData) {
+    private List<EnergyData> parseEnergyDataString(String requestData) {
         List<EnergyData> result = new ArrayList<>();
 
         String[] splitByTypeData = splitByType(getJsContent(requestData));
@@ -75,7 +87,7 @@ public class EnergyDataParser {
     private EnergyData extractData(String splitByTypeData) {
         EnergyData energyData = new EnergyData();
 
-        energyData.setName(removeAllHtmlTags(extractName(splitByTypeData)));
+        energyData.setName(HTMLEscape.removeAllHtmlTags(extractName(splitByTypeData)));
         energyData.setData(extractValuesPairs(splitByTypeData));
 
         return energyData;
@@ -165,15 +177,5 @@ public class EnergyDataParser {
         valuePair.setEnergyValue(energyValue);
         valuePair.setUnixTimeStamp(unixTimeStamp);
         return secondValueEnd;
-    }
-
-    /**
-     * Removes all html elements with regex from string. TODO This can go into separate class
-     *
-     * @param s initial string
-     * @return new string
-     */
-    private String removeAllHtmlTags(String s) {
-        return s.replaceAll("<[^>]*>", "");
     }
 }
