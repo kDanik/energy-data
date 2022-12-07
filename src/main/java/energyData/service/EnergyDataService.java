@@ -9,10 +9,9 @@ import energyData.service.parser.service.EnergyDataParser;
 import energyData.service.query.service.EnergyDataQueryService;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +73,8 @@ public class EnergyDataService {
         if (unixTimestampToValue != null && unixTimestampToValue.getValue() == null) return null;
 
         double energyValueInGw = unixTimestampToValue.getValue() != null ? unixTimestampToValue.getValue() : 0;
-        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(unixTimestampToValue.getKey()), ZoneId.of("UTC"));
+
+        Timestamp dateTime = Timestamp.from(Instant.ofEpochMilli(unixTimestampToValue.getKey()));
 
         return energyConsumptionEntryService.createOrOverrideEnergyConsumptionEntry(energyType, energyValueInGw, dateTime);
     }

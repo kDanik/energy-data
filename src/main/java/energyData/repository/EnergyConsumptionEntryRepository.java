@@ -5,12 +5,12 @@ import energyData.domain.EnergyType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.Optional;
 
 @Repository
 public interface EnergyConsumptionEntryRepository extends JpaRepository<EnergyConsumptionEntry, Long> {
-    Optional<EnergyConsumptionEntry> findByEnergyTypeAndDateTimeUtc(EnergyType energyType, LocalDateTime localDateTime);
+    Optional<EnergyConsumptionEntry> findByEnergyTypeAndDateTimeUtc(EnergyType energyType, Timestamp localDateTime);
 
-    boolean existsByEnergyTypeAndDateTimeUtc(EnergyType energyType, LocalDateTime localDateTime);
+    boolean existsByEnergyTypeAndDateTimeUtc(EnergyType energyType, Timestamp localDateTime);
 }

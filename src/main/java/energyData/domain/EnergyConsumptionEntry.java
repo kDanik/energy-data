@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Setter
 @Getter
@@ -24,8 +24,9 @@ public class EnergyConsumptionEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Instant has to be used to avoid issues with automatic converting time using timezone
     @NotNull
-    private LocalDateTime dateTimeUtc;
+    private Timestamp dateTimeUtc;
 
     @NotNull
     private Double valueInMw;
