@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface EnergyConsumptionEntryRepository extends JpaRepository<EnergyConsumptionEntry, Long> {
-    Optional<EnergyConsumptionEntry> findByEnergyTypeAndDateTime(EnergyType energyType, LocalDateTime localDateTime);
+    Optional<EnergyConsumptionEntry> findByEnergyTypeAndDateTimeUtc(EnergyType energyType, LocalDateTime localDateTime);
 
-    boolean existsByEnergyTypeAndDateTime(EnergyType energyType, LocalDateTime localDateTime);
+    boolean existsByEnergyTypeAndDateTimeUtc(EnergyType energyType, LocalDateTime localDateTime);
 }

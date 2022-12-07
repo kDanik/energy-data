@@ -22,33 +22,20 @@ public class EnergyConsumptionEntryService {
     }
 
     public void saveAll(List<EnergyConsumptionEntry> allEnergyConsumptionEntries) {
-        // due to some errors in API of agora (there is duplicated entry for one hour on 30.10.2022) this has to be done like that, instead of using saveAllAndFlush()
-
-        for (EnergyConsumptionEntry energyConsumptionEntry : allEnergyConsumptionEntries) {
-            // before saving, we should check if entry is not duplicate
-            // if id is new (or null) and entry exists with same type and dateTime, it is duplicate
-            if (energyConsumptionEntry.getId() == null || !energyConsumptionEntryRepository.existsById(energyConsumptionEntry.getId())) {
-                if (energyConsumptionEntryRepository.existsByEnergyTypeAndDateTime(energyConsumptionEntry.getEnergyType(), energyConsumptionEntry.getDateTime())) {
-                    LOG.warn("Duplicate entry detected! check your implementation or agora api for errors: " + energyConsumptionEntry);
-
-                    continue;
-                }
-            }
-
-            energyConsumptionEntryRepository.saveAndFlush(energyConsumptionEntry);
-        }
+        energyConsumptionEntryRepository.saveAllAndFlush(allEnergyConsumptionEntries);
     }
 
     /**
      * Creates new entry or overrides existing entry with given data. DOES NOT save entry into database.
      * Due to performance reasons saving should be done to entire list, instead of each entry separately.
+     *
      * @param energyType
      * @param energyValueInGw energy value in gigawatt
      * @param dateTime
      * @return new EnergyConsumptionEntry entry or overridden EnergyConsumptionEntry entry
      */
     public EnergyConsumptionEntry createOrOverrideEnergyConsumptionEntry(EnergyType energyType, Double energyValueInGw, LocalDateTime dateTime) {
-        Optional<EnergyConsumptionEntry> consumptionEntryOptional = energyConsumptionEntryRepository.findByEnergyTypeAndDateTime(energyType, dateTime);
+        Optional<EnergyConsumptionEntry> consumptionEntryOptional = energyConsumptionEntryRepository.findByEnergyTypeAndDateTimeUtc(energyType, dateTime);
         if (consumptionEntryOptional.isPresent()) {
             return overrideValueOfExistingEntry(consumptionEntryOptional.get(), energyValueInGw);
         } else {
@@ -67,7 +54,7 @@ public class EnergyConsumptionEntryService {
 
         energyConsumptionEntry.setEnergyType(energyType);
         energyConsumptionEntry.setValueInMw(energyValueInGw);
-        energyConsumptionEntry.setDateTime(dateTime);
+        energyConsumptionEntry.setDateTimeUtc(dateTime);
 
         return energyConsumptionEntry;
     }

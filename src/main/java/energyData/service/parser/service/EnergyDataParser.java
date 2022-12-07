@@ -6,9 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class EnergyDataParser {
@@ -59,7 +57,7 @@ public class EnergyDataParser {
             return requestData.substring(start, end);
         } catch (IndexOutOfBoundsException e) {
             LOG.error("IndexOutOfBoundsException while parsing request data: " + requestData, e);
-            
+
             throw new EnergyDataParsingException();
         }
     }
@@ -73,7 +71,7 @@ public class EnergyDataParser {
     private String[] splitByType(String jsContent) {
         String[] temp = jsContent.split("name\\\\\":");
         temp = Arrays.copyOfRange(temp, 1, temp.length);
-
+        
         if (temp.length == 0)
             throw new EnergyDataParsingException("Exception while parsing energy data, splitByType() resulted into empty array!");
 
@@ -114,10 +112,10 @@ public class EnergyDataParser {
      * extracts all value pairs from splitByTypeData string
      *
      * @param data see splitByTypeData
-     * @return List with extracted values (EnergyDataValuePair)
+     * @return Map with extracted values (Unix timestamp -> value)
      */
-    private List<EnergyDataValuePair> extractValuesPairs(String data) {
-        ArrayList<EnergyDataValuePair> valuesPairs = new ArrayList<>();
+    private Map<Long, Double> extractValuesPairs(String data) {
+        Map<Long, Double> valuesPairs = new HashMap();
 
         int currentIndex = findStartOfValuesArray(data);
 
@@ -142,15 +140,19 @@ public class EnergyDataParser {
     /**
      * @param data         see splitByTypeData
      * @param currentIndex current index in data string, from which search should be continued
-     * @param valuesPairs  array in which valuePair should be added, if found
+     * @param valuesPairs  map in which valuePair should be added, if found
      * @return new currentIndex if there can be still further elements, otherwise -1
      */
-    private int addNextValuePair(String data, int currentIndex, ArrayList<EnergyDataValuePair> valuesPairs) {
+    private int addNextValuePair(String data, int currentIndex, Map<Long, Double> valuesPairs) {
         EnergyDataValuePair energyDataValuePair = new EnergyDataValuePair();
 
         int energyPairEndIndex = fillValuePairWithData(data, currentIndex, energyDataValuePair);
 
-        valuesPairs.add(energyDataValuePair);
+        if (valuesPairs.containsKey(energyDataValuePair.getUnixTimeStamp())) {
+            LOG.warn("duplicated entry (duplicated timestamp) detected! Probably error in agora-API... " + energyDataValuePair);
+        } else {
+            valuesPairs.put(energyDataValuePair.getUnixTimeStamp(), energyDataValuePair.getEnergyValue());
+        }
 
         currentIndex = energyPairEndIndex + 2;
         if (data.charAt(currentIndex - 1) != ',') {

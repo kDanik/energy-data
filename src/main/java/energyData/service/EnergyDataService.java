@@ -6,17 +6,17 @@ import energyData.service.db.EnergyConsumptionEntryService;
 import energyData.service.db.EnergyTypeService;
 import energyData.service.parser.service.EnergyData;
 import energyData.service.parser.service.EnergyDataParser;
-import energyData.service.parser.service.EnergyDataValuePair;
 import energyData.service.query.service.EnergyDataQueryService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.TimeZone;
 
 @Service
 public class EnergyDataService {
@@ -61,8 +61,8 @@ public class EnergyDataService {
     private void addEnergyConsumptionEntries(EnergyData energyData, List<EnergyConsumptionEntry> allEnergyConsumptionEntries) {
         EnergyType energyType = getOrCreateEnergyType(energyData.getName());
 
-        for (EnergyDataValuePair energyDataValuePair : energyData.getData()) {
-            EnergyConsumptionEntry energyConsumptionEntry = createEnergyConsumptionEntry(energyDataValuePair, energyType);
+        for (Map.Entry<Long, Double> unixTimestampToValue : energyData.getData().entrySet()) {
+            EnergyConsumptionEntry energyConsumptionEntry = createEnergyConsumptionEntry(unixTimestampToValue, energyType);
 
             if (energyConsumptionEntry != null) {
                 allEnergyConsumptionEntries.add(energyConsumptionEntry);
@@ -70,11 +70,11 @@ public class EnergyDataService {
         }
     }
 
-    private EnergyConsumptionEntry createEnergyConsumptionEntry(EnergyDataValuePair energyDataValuePair, EnergyType energyType) {
-        if (energyDataValuePair != null && energyDataValuePair.getUnixTimeStamp() == null) return null;
+    private EnergyConsumptionEntry createEnergyConsumptionEntry(Map.Entry<Long, Double> unixTimestampToValue, EnergyType energyType) {
+        if (unixTimestampToValue != null && unixTimestampToValue.getValue() == null) return null;
 
-        double energyValueInGw = energyDataValuePair.getEnergyValue() != null ? energyDataValuePair.getEnergyValue() : 0;
-        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(energyDataValuePair.getUnixTimeStamp()), TimeZone.getDefault().toZoneId());
+        double energyValueInGw = unixTimestampToValue.getValue() != null ? unixTimestampToValue.getValue() : 0;
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(unixTimestampToValue.getKey()), ZoneId.of("UTC"));
 
         return energyConsumptionEntryService.createOrOverrideEnergyConsumptionEntry(energyType, energyValueInGw, dateTime);
     }

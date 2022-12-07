@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 // Somehow it does that only for one of the fields, and for dateTime it doesn't allow date_time.
 // Probably it is bug in hibernate
 @Table(uniqueConstraints={
-        @UniqueConstraint(columnNames = {"dateTime", "energy_type_id"})
+        @UniqueConstraint(columnNames = {"dateTimeUtc", "energy_type_id"})
 })
 public class EnergyConsumptionEntry {
     @Id
@@ -25,7 +25,7 @@ public class EnergyConsumptionEntry {
     private Long id;
 
     @NotNull
-    private LocalDateTime dateTime;
+    private LocalDateTime dateTimeUtc;
 
     @NotNull
     private Double valueInMw;
