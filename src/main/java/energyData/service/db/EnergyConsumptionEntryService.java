@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +21,9 @@ public class EnergyConsumptionEntryService {
         this.energyConsumptionEntryRepository = energyConsumptionEntryRepository;
     }
 
+    /**
+     * Batch saves list of EnergyConsumptionEntry-s in one operation
+     */
     public void saveAll(List<EnergyConsumptionEntry> allEnergyConsumptionEntries) {
         energyConsumptionEntryRepository.saveAllAndFlush(allEnergyConsumptionEntries);
     }
@@ -34,7 +37,7 @@ public class EnergyConsumptionEntryService {
      * @param dateTime
      * @return new EnergyConsumptionEntry entry or overridden EnergyConsumptionEntry entry
      */
-    public EnergyConsumptionEntry createOrOverrideEnergyConsumptionEntry(EnergyType energyType, Double energyValueInGw, LocalDateTime dateTime) {
+    public EnergyConsumptionEntry createOrOverrideEnergyConsumptionEntry(EnergyType energyType, Double energyValueInGw, Timestamp dateTime) {
         Optional<EnergyConsumptionEntry> consumptionEntryOptional = energyConsumptionEntryRepository.findByEnergyTypeAndDateTimeUtc(energyType, dateTime);
         if (consumptionEntryOptional.isPresent()) {
             return overrideValueOfExistingEntry(consumptionEntryOptional.get(), energyValueInGw);
@@ -49,7 +52,7 @@ public class EnergyConsumptionEntryService {
         return energyConsumptionEntry;
     }
 
-    private EnergyConsumptionEntry createNewEntry(EnergyType energyType, Double energyValueInGw, LocalDateTime dateTime) {
+    private EnergyConsumptionEntry createNewEntry(EnergyType energyType, Double energyValueInGw, Timestamp dateTime) {
         EnergyConsumptionEntry energyConsumptionEntry = new EnergyConsumptionEntry();
 
         energyConsumptionEntry.setEnergyType(energyType);
