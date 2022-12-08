@@ -27,7 +27,6 @@ public class EnergyDataQueryService {
 
     // if time period is bigger than 28 days (one calendar month) the return data will have
     // time interval of 1 day, instead of required time interval of 1 hour.
-    // 28 is obviously minimum possible month size.
     private final int MAXIMUM_TIME_PERIOD_PER_FETCH = 28;
     private final String API_URL = "https://www.agora-energiewende.de/service/agorameter/chart/data/power_generation/";
 
@@ -57,10 +56,8 @@ public class EnergyDataQueryService {
             if (chunkEndDate.isAfter(endDate)) {
                 chunkEndDate = endDate;
                 timePeriodFullyIterated = true;
-            } else {
-                if (chunkEndDate.equals(endDate)) {
-                    timePeriodFullyIterated = true;
-                }
+            } else if (chunkEndDate.equals(endDate)) {
+                timePeriodFullyIterated = true;
             }
 
             try {

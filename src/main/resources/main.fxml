@@ -18,7 +18,6 @@
    <bottom>
       <ButtonBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="48.0" prefWidth="580.0" BorderPane.alignment="CENTER_LEFT">
         <buttons>
-            <Button layoutX="450.0" layoutY="17.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="160.0" text="Some Function" />
             <Button layoutX="450.0" layoutY="17.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="160.0" text="Fetch and save data" onAction="#fetchAndSaveEnergyData" fx:id="fetchAndSaveButton" />
         </buttons>
          <BorderPane.margin>
