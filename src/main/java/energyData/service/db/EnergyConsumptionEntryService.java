@@ -6,12 +6,13 @@ import energyData.repository.EnergyConsumptionEntryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class EnergyConsumptionEntryService {
     private final EnergyConsumptionEntryRepository energyConsumptionEntryRepository;
 
@@ -37,12 +38,12 @@ public class EnergyConsumptionEntryService {
      * @param dateTime
      * @return new EnergyConsumptionEntry entry or overridden EnergyConsumptionEntry entry
      */
-    public EnergyConsumptionEntry createOrOverrideEnergyConsumptionEntry(EnergyType energyType, Double energyValueInGw, Timestamp dateTime) {
-        Optional<EnergyConsumptionEntry> consumptionEntryOptional = energyConsumptionEntryRepository.findByEnergyTypeAndDateTimeUtc(energyType, dateTime);
+    public EnergyConsumptionEntry createOrOverrideEnergyConsumptionEntry(EnergyType energyType, Double energyValueInGw, Long timestamp) {
+        Optional<EnergyConsumptionEntry> consumptionEntryOptional = energyConsumptionEntryRepository.findByEnergyTypeIdAndTimestamp(energyType.getId(), timestamp);
         if (consumptionEntryOptional.isPresent()) {
             return overrideValueOfExistingEntry(consumptionEntryOptional.get(), energyValueInGw);
         } else {
-            return createNewEntry(energyType, energyValueInGw, dateTime);
+            return createNewEntry(energyType, energyValueInGw, timestamp);
         }
     }
 
@@ -52,12 +53,12 @@ public class EnergyConsumptionEntryService {
         return energyConsumptionEntry;
     }
 
-    private EnergyConsumptionEntry createNewEntry(EnergyType energyType, Double energyValueInGw, Timestamp dateTime) {
+    private EnergyConsumptionEntry createNewEntry(EnergyType energyType, Double energyValueInGw, Long timestamp) {
         EnergyConsumptionEntry energyConsumptionEntry = new EnergyConsumptionEntry();
 
         energyConsumptionEntry.setEnergyType(energyType);
         energyConsumptionEntry.setValueInMw(energyValueInGw);
-        energyConsumptionEntry.setDateTimeUtc(dateTime);
+        energyConsumptionEntry.setTimestamp(timestamp);
 
         return energyConsumptionEntry;
     }

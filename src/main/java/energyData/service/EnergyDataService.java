@@ -9,8 +9,6 @@ import energyData.service.parser.service.EnergyDataParser;
 import energyData.service.query.service.EnergyDataQueryService;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,9 +72,7 @@ public class EnergyDataService {
 
         double energyValueInGw = unixTimestampToValue.getValue() != null ? unixTimestampToValue.getValue() : 0;
 
-        Timestamp dateTime = Timestamp.from(Instant.ofEpochMilli(unixTimestampToValue.getKey()));
-
-        return energyConsumptionEntryService.createOrOverrideEnergyConsumptionEntry(energyType, energyValueInGw, dateTime);
+        return energyConsumptionEntryService.createOrOverrideEnergyConsumptionEntry(energyType, energyValueInGw, unixTimestampToValue.getKey());
     }
 
     private EnergyType getOrCreateEnergyType(String energyTypeName) {
