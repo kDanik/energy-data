@@ -88,7 +88,7 @@ public class EnergyDataParser {
         EnergyData energyData = new EnergyData();
 
         energyData.setName(HTMLEscape.removeAllHtmlTags(extractName(splitByTypeData)));
-        energyData.setData(extractValuesPairs(splitByTypeData));
+        energyData.setTimestampValuePairs(extractValuesPairs(splitByTypeData));
 
         return energyData;
     }
@@ -112,10 +112,10 @@ public class EnergyDataParser {
      * extracts all value pairs from splitByTypeData string
      *
      * @param data see splitByTypeData
-     * @return Map with extracted values (Unix timestamp -> value)
+     * @return linked list extracted values
      */
-    private Map<Long, Double> extractValuesPairs(String data) {
-        Map<Long, Double> valuesPairs = new HashMap();
+    private LinkedList<EnergyDataValuePair> extractValuesPairs(String data) {
+        LinkedList<EnergyDataValuePair> valuesPairs = new LinkedList<>();
 
         int currentIndex = findStartOfValuesArray(data);
 
@@ -140,19 +140,15 @@ public class EnergyDataParser {
     /**
      * @param data         see splitByTypeData
      * @param currentIndex current index in data string, from which search should be continued
-     * @param valuesPairs  map in which valuePair should be added, if found
+     * @param valuesPairs  linked list for value pairs
      * @return new currentIndex if there can be still further elements, otherwise -1
      */
-    private int addNextValuePair(String data, int currentIndex, Map<Long, Double> valuesPairs) {
+    private int addNextValuePair(String data, int currentIndex, LinkedList<EnergyDataValuePair> valuesPairs) {
         EnergyDataValuePair energyDataValuePair = new EnergyDataValuePair();
 
         int energyPairEndIndex = fillValuePairWithData(data, currentIndex, energyDataValuePair);
 
-        if (valuesPairs.containsKey(energyDataValuePair.getUnixTimeStamp())) {
-            LOG.warn("duplicated entry (duplicated timestamp) detected! Probably error in agora-API... " + energyDataValuePair);
-        } else {
-            valuesPairs.put(energyDataValuePair.getUnixTimeStamp(), energyDataValuePair.getEnergyValue());
-        }
+        valuesPairs.addLast(energyDataValuePair);
 
         currentIndex = energyPairEndIndex + 2;
         if (data.charAt(currentIndex - 1) != ',') {

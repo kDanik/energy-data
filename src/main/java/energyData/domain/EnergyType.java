@@ -11,6 +11,7 @@ import javax.persistence.*;
 @Setter
 @ToString
 @Entity
+@Table(indexes = @Index(name="name", columnList = "name", unique = true))
 public class EnergyType {
     @Id
     @Column(name = "id", nullable = false)
