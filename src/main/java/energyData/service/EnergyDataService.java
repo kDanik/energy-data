@@ -38,19 +38,13 @@ public class EnergyDataService {
      * @param endDate
      */
     public void fetchAndSaveData(LocalDate startDate, LocalDate endDate) {
-        LOG.error("Start data fetching");
         List<String> rawDataList = energyDataQueryService.fetchHourlyEnergyData(startDate, endDate);
 
-        LOG.error("End data fetching. Start data parsing.");
         List<EnergyData> energyDataList = energyDataParser.parseEnergyData(rawDataList);
 
-        LOG.error("End data parsing. Start data processing.");
         List<EnergyConsumptionEntry> allEnergyConsumptionEntries = processEnergyDataList(energyDataList);
 
-        LOG.error("End data processing. Start data saving.");
         energyConsumptionEntryService.saveAll(allEnergyConsumptionEntries);
-
-        LOG.error("End data saving.");
     }
 
     private List<EnergyConsumptionEntry> processEnergyDataList(List<EnergyData> energyDataList) {

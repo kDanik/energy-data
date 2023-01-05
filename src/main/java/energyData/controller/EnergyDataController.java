@@ -1,6 +1,7 @@
 package energyData.controller;
 
 import energyData.service.EnergyDataService;
+import energyData.service.db.EnergyConsumptionEntryService;
 import energyData.util.SecureLocalDateStringConverter;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Optional;
 
 @Component
 public class EnergyDataController {
@@ -26,41 +29,65 @@ public class EnergyDataController {
     private DatePicker datePickerEnd;
 
     @FXML
-    private Button fetchAndSaveButton;
+    private Button fetchAndSaveButtonLatest;
+
+    @FXML
+    private Button fetchAndSaveButtonTimePeriod;
 
     private EnergyDataService energyDataService;
 
-    public EnergyDataController(EnergyDataService energyDataService) {
+    private EnergyConsumptionEntryService energyConsumptionEntryService;
+
+    public EnergyDataController(EnergyDataService energyDataService, EnergyConsumptionEntryService energyConsumptionEntryService) {
         this.energyDataService = energyDataService;
+        this.energyConsumptionEntryService = energyConsumptionEntryService;
     }
 
     @FXML
     public void initialize() {
         datePickerStart.setConverter(new SecureLocalDateStringConverter());
         datePickerEnd.setConverter(new SecureLocalDateStringConverter());
+
+        updateFetchAndSaveLatestButton();
     }
 
-    public void fetchAndSaveEnergyData() {
-       LocalDate startDate = datePickerStart.getValue();
-       LocalDate endDate = datePickerEnd.getValue();
+    public void fetchAndSaveEnergyDataWithPeriod() {
+        LocalDate startDate = datePickerStart.getValue();
+        LocalDate endDate = datePickerEnd.getValue();
 
-       if (startDate == null || endDate == null) {
-           displayEmptyDateError();
-           return;
-       }
+        if (startDate == null || endDate == null) {
+            displayEmptyDateError();
+            return;
+        }
 
-       if (startDate.isAfter(endDate)) {
-           displayInvalidTimePeriodError();
-           return;
-       }
+        if (startDate.isAfter(endDate)) {
+            displayInvalidTimePeriodError();
+            return;
+        }
 
-       if (endDate.isAfter(LocalDate.now())) {
-           displayFutureTimePeriodError();
-           return;
-       }
+        if (endDate.isAfter(LocalDate.now())) {
+            displayFutureTimePeriodError();
+            return;
+        }
 
+        fetchAndSaveEnergyData(startDate, endDate);
+    }
+
+    public void fetchAndSaveEnergyDataLatest() {
+        Optional<LocalDate> startDateOptional = energyConsumptionEntryService.getDateOfLatestEnergyConsumptionEntry();
+
+        if (startDateOptional.isEmpty()) {
+        } else {
+            LocalDate endDate = LocalDate.now(ZoneId.of("UTC"));
+
+            fetchAndSaveEnergyData(startDateOptional.get(), endDate);
+        }
+    }
+
+    private void fetchAndSaveEnergyData(LocalDate startDate, LocalDate endDate) {
         displayProcessStartInfoMessage();
-        fetchAndSaveButton.setDisable(true);
+        fetchAndSaveButtonLatest.setDisable(true);
+        fetchAndSaveButtonTimePeriod.setDisable(true);
 
         startDataFetchAndSaveThread(startDate, endDate);
     }
@@ -74,21 +101,40 @@ public class EnergyDataController {
                 success = true;
             } catch (Exception e) {
                 LOG.error("exception while trying to fetch and save energy data: ", e);
-
-                success = false;
             } finally {
                 boolean finalSuccess = success;
                 Platform.runLater(() -> {
-                    if (finalSuccess) {
-                        displayProcessFinishInfoMessage();
-                    } else {
-                        displayProcessErrorInfoMessage();
-                    }
-                    fetchAndSaveButton.setDisable(false);
+                    onDataFetchAndSaveEnd(finalSuccess);
                 });
             }
         }).start();
     }
+
+    private void onDataFetchAndSaveEnd(boolean success) {
+        if (success) {
+            displayProcessFinishInfoMessage();
+        } else {
+            displayProcessErrorInfoMessage();
+        }
+
+        fetchAndSaveButtonLatest.setDisable(false);
+        fetchAndSaveButtonTimePeriod.setDisable(false);
+
+        updateFetchAndSaveLatestButton();
+    }
+
+    private void updateFetchAndSaveLatestButton() {
+        Optional<LocalDate> startDateOptional = energyConsumptionEntryService.getDateOfLatestEnergyConsumptionEntry();
+
+        if (startDateOptional.isEmpty()) {
+            fetchAndSaveButtonLatest.setText("Save data starting from last fetch (no data found)");
+            fetchAndSaveButtonLatest.setDisable(true);
+        } else {
+            fetchAndSaveButtonLatest.setText("Save data starting from last fetch (" + startDateOptional.get() + ")");
+            fetchAndSaveButtonLatest.setDisable(false);
+        }
+    }
+
     private void displayEmptyDateError() {
         displayErrorMessage("Please enter valid dates for both start and end!");
     }

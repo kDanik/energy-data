@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface EnergyConsumptionEntryRepository extends JpaRepository<EnergyConsumptionEntry, EnergyConsumptionEntryId> {
-    Optional<EnergyConsumptionEntry> findByEnergyTypeIdAndTimestamp(Long energyTypeId, Long timestamp);
+    Optional<EnergyConsumptionEntry> findFirstByOrderByTimestampDesc();
 }

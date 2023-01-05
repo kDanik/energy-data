@@ -8,7 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -43,5 +47,13 @@ public class EnergyConsumptionEntryService {
         energyConsumptionEntry.setTimestamp(timestamp);
 
         return energyConsumptionEntry;
+    }
+
+    public Optional<LocalDate> getDateOfLatestEnergyConsumptionEntry() {
+        Optional<EnergyConsumptionEntry> energyConsumptionEntryOptional = energyConsumptionEntryRepository.findFirstByOrderByTimestampDesc();
+
+        if (energyConsumptionEntryOptional.isEmpty()) return Optional.empty();
+
+        return Optional.of(LocalDate.ofInstant(Instant.ofEpochMilli(energyConsumptionEntryOptional.get().getTimestamp()), ZoneId.of("UTC")));
     }
 }
