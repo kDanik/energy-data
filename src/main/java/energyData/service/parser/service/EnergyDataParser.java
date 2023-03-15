@@ -6,7 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 @Service
 public class EnergyDataParser {
@@ -71,7 +74,7 @@ public class EnergyDataParser {
     private String[] splitByType(String jsContent) {
         String[] temp = jsContent.split("name\\\\\":");
         temp = Arrays.copyOfRange(temp, 1, temp.length);
-        
+
         if (temp.length == 0)
             throw new EnergyDataParsingException("Exception while parsing energy data, splitByType() resulted into empty array!");
 

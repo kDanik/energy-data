@@ -22,6 +22,7 @@ public class EnergyTypeService {
 
     /**
      * Creates new EnergyType with given name
+     *
      * @param energyTypeName unique energy type name. Using duplicate name will throw exception
      * @return new EnergyType entity
      */

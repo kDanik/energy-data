@@ -12,7 +12,7 @@ import javax.persistence.*;
 @ToString
 @Entity
 @IdClass(EnergyConsumptionEntryId.class)
-@Table(indexes = @Index(name="timestampTypeIndex", columnList = "timestamp, energy_type_id", unique = true))
+@Table(indexes = @Index(name = "timestampTypeIndex", columnList = "timestamp, energy_type_id", unique = true))
 public class EnergyConsumptionEntry {
     // Instant has to be used to avoid issues with automatic converting time using timezone
     @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
