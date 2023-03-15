@@ -9,7 +9,7 @@ Project is configured to be used with MySQL databases, but can be easily switche
 
 Example:
 
-<img width="913" alt="Example of application" src="https://user-images.githubusercontent.com/86569730/198019679-be474ea1-0dd8-4b81-b009-54f093007f86.png">
+<img width="595" alt="Screenshot 2023-03-15 at 09 58 47" src="https://user-images.githubusercontent.com/86569730/225266371-24fc191a-3990-4052-8553-19dd6427f5cf.png">
 
 
 
