@@ -1,6 +1,6 @@
 # energy-data
 
-Java (Spring Boot) console application for fetching, parsing, and saving hourly energy consumption data by type.
+Java (Spring Boot) application for fetching, parsing, and saving hourly energy consumption data by type.
 
 ## Description
 
